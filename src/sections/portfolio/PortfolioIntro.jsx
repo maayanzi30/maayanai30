@@ -7,7 +7,8 @@ export default function PortfolioIntro() {
     <Section tint="tint-plum" center labelledBy="pf-intro-title">
       <span className="eyebrow">תיק עבודות</span>
       <h1 id="pf-intro-title" className="measure" style={{ marginInline: 'auto' }}>
-        אוסף של לוקים, כל אחד עם סיפור
+        אוסף של לוקים, כל אחד{' '}
+        <span className="gradient-text">עם סיפור</span>
       </h1>
       <p className="lead measure" style={{ marginInline: 'auto' }}>
         אלה עבודות שנבנו סביב אנשים אמיתיים — אירועים, ימי צילום ורגעים מיוחדים.

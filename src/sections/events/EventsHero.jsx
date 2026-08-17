@@ -8,7 +8,8 @@ export default function EventsHero() {
     <Section tint="tint-plum" center labelledBy="ev-hero-title">
       <span className="eyebrow">איפור לאירועים וימי צילום</span>
       <h1 id="ev-hero-title" className="measure" style={{ marginInline: 'auto' }}>
-        איפור שמחזיק מהרגע הראשון ועד סוף הערב
+        איפור שמחזיק מהרגע הראשון{' '}
+        <span className="gradient-text">ועד סוף הערב</span>
       </h1>
       <p className="lead measure" style={{ marginInline: 'auto' }}>
         לאירועים מיוחדים ולימי צילום — איפור לא שגרתי, מדויק ואישי, שנבנה סביבכן
@@ -16,6 +17,9 @@ export default function EventsHero() {
       </p>
       <div className="btn-row" style={{ marginTop: 4 }}>
         <a href="#booking" className="btn btn--primary">
+          <span className="btn__dot" aria-hidden="true">
+            ◄
+          </span>
           לטופס קביעת תור
         </a>
         <a

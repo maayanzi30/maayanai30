@@ -6,7 +6,7 @@ export default function ContactIntro() {
     <Section tint="tint-plum" center labelledBy="ct-intro-title">
       <span className="eyebrow">יצירת קשר</span>
       <h1 id="ct-intro-title" className="measure" style={{ marginInline: 'auto' }}>
-        בואו נדבר על הלוק שלכן
+        בואו נדבר על <span className="gradient-text">הלוק שלכן</span>
       </h1>
       <p className="lead measure" style={{ marginInline: 'auto' }}>
         לאירוע, ליום צילום או לסדנה — אני כאן לענות על כל שאלה ולעזור לכן לבחור

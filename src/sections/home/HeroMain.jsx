@@ -9,7 +9,8 @@ export default function HeroMain() {
     <Section tint="tint-plum" center labelledBy="hero-title">
       <span className="eyebrow">{business.tagline}</span>
       <h1 id="hero-title" className="measure" style={{ marginInline: 'auto' }}>
-        איפור אמנותי שמביא את האופי שלך לקדמת הבמה
+        איפור אמנותי שמביא את האופי שלך{' '}
+        <span className="gradient-text">לקדמת הבמה</span>
       </h1>
       <p className="lead measure" style={{ marginInline: 'auto' }}>
         {business.message} אני מתמחה באיפור לא שגרתי לאירועים מיוחדים, ימי צילום
@@ -17,6 +18,9 @@ export default function HeroMain() {
       </p>
       <div className="btn-row" style={{ marginTop: 8 }}>
         <Link to="/contact" className="btn btn--primary">
+          <span className="btn__dot" aria-hidden="true">
+            ◄
+          </span>
           לקביעת תור
         </Link>
         <a

@@ -7,7 +7,8 @@ export default function WorkshopsHero() {
     <Section tint="tint-plum" center labelledBy="ws-hero-title">
       <span className="eyebrow">סדנאות איפור</span>
       <h1 id="ws-hero-title" className="measure" style={{ marginInline: 'auto' }}>
-        ללמוד לאפר את עצמכן — בביטחון ובשפה אמנותית
+        ללמוד לאפר את עצמכן —{' '}
+        <span className="gradient-text">בביטחון ובשפה אמנותית</span>
       </h1>
       <p className="lead measure" style={{ marginInline: 'auto' }}>
         סדנאות אישיות וקבוצתיות שבהן אתן לוקחות את הכלים הביתה. בלי סודות שמורים —
@@ -15,6 +16,9 @@ export default function WorkshopsHero() {
       </p>
       <div className="btn-row" style={{ marginTop: 4 }}>
         <a href="#register" className="btn btn--primary">
+          <span className="btn__dot" aria-hidden="true">
+            ◄
+          </span>
           להרשמה לסדנה
         </a>
       </div>
