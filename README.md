@@ -112,3 +112,11 @@ follows reading order through the pinned rail.
 
 Automated checks only go so far — a manual screen-reader pass is still worth
 doing before anything like this goes live.
+
+## Single-file build
+
+`npm run build:embed` produces `dist-embed/standalone.html` — the whole site as
+one portable HTML fragment, with the fonts as data URIs and the CSS and JS
+inlined. Useful for hosting the site anywhere that takes a single file. Code
+splitting is disabled for this build only (`vite.artifact.config.js`); the
+normal `npm run build` keeps Three.js off the critical path.
