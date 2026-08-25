@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B0B12"/>
+      <stop offset="0.5" stop-color="#111A2E"/>
+      <stop offset="1" stop-color="#08080B"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <circle cx="1010" cy="120" r="190" fill="#2B5CFF" opacity="0.28"/>
+  <circle cx="180" cy="560" r="230" fill="#CCF553" opacity="0.14"/>
+  <text x="72" y="250" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="132" font-weight="900" fill="#F4F1EA" letter-spacing="-4">MILO KESTREL</text>
+  <text x="76" y="330" font-family="Helvetica, Arial, sans-serif" font-size="34" font-weight="500" fill="#CCF553" letter-spacing="2">PRODUCT DESIGNER &#183; CREATIVE TECHNOLOGIST</text>
+  <text x="76" y="420" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="#9A9AA8">Interfaces with a pulse. Design systems, motion</text>
+  <text x="76" y="464" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="#9A9AA8">and shipped product for teams building hard things.</text>
+  <rect x="72" y="530" width="220" height="8" fill="#CCF553"/>
+</svg>
