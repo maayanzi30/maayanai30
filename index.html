@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>מעיין זי · מאפרת כלות</title>
+<meta name="description" content="מעיין זי — מאפרת כלות. חוויה תלת־ממדית סביב אובייקט אחד: העור, העין, השפה, הצעיף, והרגע שבו הדלת נפתחת.">
+<meta name="theme-color" content="#0a0709">
+<meta property="og:type" content="website">
+<meta property="og:title" content="מעיין זי · מאפרת כלות">
+<meta property="og:description" content="חוויה תלת־ממדית בזמן אמת סביב אובייקט אחד. גללי, ותראי את האיפור נבנה.">
+<meta property="og:locale" content="he_IL">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500&family=Assistant:wght@200;300;400;600&display=swap">
+<link rel="stylesheet" href="styles/main.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='9' fill='none' stroke='%23d9b48f' stroke-width='1.5'/></svg>">
+</head>
+<body>
+
+<!-- the object ------------------------------------------------------------- -->
+<canvas data-canvas class="stage" aria-hidden="true"></canvas>
+<div class="stage-fallback" aria-hidden="true"></div>
+
+<!-- preloader -------------------------------------------------------------- -->
+<div class="preloader" data-preloader>
+  <div class="preloader__inner">
+    <p class="preloader__brand">מעיין זי</p>
+    <p class="preloader__role">מאפרת כלות</p>
+    <div class="preloader__meter">
+      <span class="preloader__bar" data-preloader-bar></span>
+    </div>
+    <p class="preloader__status">
+      <span data-preloader-label>מתחילים</span>
+      <span class="preloader__value" data-preloader-value>000</span>
+    </p>
+    <button type="button" class="preloader__enter" data-preloader-enter>
+      <span>כניסה</span>
+    </button>
+    <p class="preloader__note">מומלץ עם קול, במסך מלא</p>
+  </div>
+</div>
+
+<!-- chrome ----------------------------------------------------------------- -->
+<header class="chrome chrome--top">
+  <a class="brand" href="#overture">
+    <span class="brand__name">מעיין זי</span>
+    <span class="brand__role">מאפרת כלות</span>
+  </a>
+  <a class="chrome__cta" href="#contact">
+    <span>לבדיקת תאריך</span>
+    <span class="chrome__cta-dot" aria-hidden="true"></span>
+  </a>
+</header>
+
+<nav class="nav" data-nav aria-label="פרקים"></nav>
+
+<div class="progress" aria-hidden="true">
+  <span class="progress__counter" data-progress-counter>01 / 09</span>
+  <span class="progress__track"><span class="progress__bar" data-progress-bar></span></span>
+</div>
+
+<div class="scroll-hint" data-scroll-hint aria-hidden="true">
+  <span class="scroll-hint__label">גללי</span>
+  <span class="scroll-hint__line"></span>
+</div>
+
+<!-- the palette interaction ------------------------------------------------ -->
+<aside class="palette" data-palette aria-hidden="true" aria-label="בחירת גוונים"></aside>
+
+<!-- copy ------------------------------------------------------------------- -->
+<main class="story">
+
+  <section class="chapter chapter--center" data-chapter id="overture">
+    <h1 class="chapter__display">
+      <span class="chapter__display-line">מעיין&nbsp;זי</span>
+    </h1>
+    <p class="chapter__lead">מאפרת כלות</p>
+    <p class="chapter__body">הבוקר הזה מתחיל בשקט. עוד לפני השמלה, לפני הצלם, לפני כולם — יש חדר אחד, כיסא אחד, ואת.</p>
+  </section>
+
+  <section class="chapter chapter--start" data-chapter id="canvas">
+    <p class="chapter__kicker"><span>01</span> הבד</p>
+    <h2 class="chapter__title">הבד</h2>
+    <p class="chapter__lead">לפני הצבע — העור.</p>
+    <p class="chapter__body">שכבה על שכבה, דקה מהקודמת. עבודה שנועדה להיעלם: אף אחד לא אמור לראות אותה, כולם אמורים להרגיש אותה. זה הבסיס שמחזיק שתים־עשרה שעות, שלוש שמלות ומאתיים חיבוקים.</p>
+  </section>
+
+  <section class="chapter chapter--end" data-chapter id="eye">
+    <p class="chapter__kicker"><span>02</span> העין</p>
+    <h2 class="chapter__title">העין</h2>
+    <p class="chapter__lead">כאן מסתכלים עלייך.</p>
+    <p class="chapter__body">בתמונות של החתונה, בסרטון של הריקוד, בעוד עשרים שנה על המדף. העין היא המשפט הראשון — ואני כותבת אותו בשכבות דקות, עם יד קרובה מאוד.</p>
+  </section>
+
+  <section class="chapter chapter--start" data-chapter id="lip">
+    <p class="chapter__kicker"><span>03</span> השפה</p>
+    <h2 class="chapter__title">השפה</h2>
+    <p class="chapter__lead">הצבע היחיד שמדבר.</p>
+    <p class="chapter__body">קו אחד מחליט אם הפנים רכות או חדות, קלאסיות או מודרניות. אנחנו נבחר אותו יחד — ואז נוודא שהוא שורד את הכוס הראשונה, את הנשיקה ואת החופה.</p>
+  </section>
+
+  <section class="chapter chapter--center" data-chapter id="veil">
+    <p class="chapter__kicker"><span>04</span> הצעיף</p>
+    <h2 class="chapter__title">הצעיף</h2>
+    <p class="chapter__lead">ואז הכול זז.</p>
+    <p class="chapter__body">רוח, בד, מדרגות, אור אחר. איפור טוב הוא לא איך שהוא נראה בכיסא — אלא איך שהוא נראה אחרי שהצעיף עבר עליו.</p>
+  </section>
+
+  <section class="chapter chapter--top" data-chapter id="palette">
+    <p class="chapter__kicker"><span>05</span> הפלטה</p>
+    <h2 class="chapter__title">הפלטה</h2>
+    <p class="chapter__lead">עכשיו תורך.</p>
+    <p class="chapter__body">בחרי גוון לשפתיים ולעפעפיים — ותראי אותו נכנס לפנים בזמן אמת. ככה בדיוק נראית פגישת הניסיון, רק בלי הנסיעה.</p>
+  </section>
+
+  <section class="chapter chapter--end" data-chapter id="light">
+    <p class="chapter__kicker"><span>06</span> האור</p>
+    <h2 class="chapter__title">האור</h2>
+    <p class="chapter__lead">הזיזי את העכבר. תראי מה קורה.</p>
+    <p class="chapter__body">אולם, גינה, שקיעה, ניאון של מסיבה. אותו איפור מקבל ארבע פנים. אני מאפרת לאור שבו את הולכת לעמוד — לא לאור שבו אני עובדת.</p>
+  </section>
+
+  <section class="chapter chapter--center" data-chapter id="moment">
+    <p class="chapter__kicker"><span>07</span> הרגע</p>
+    <h2 class="chapter__title">הרגע</h2>
+    <p class="chapter__lead">הדלת נפתחת.</p>
+    <p class="chapter__body">כל מה שעשינו בשלוש השעות האחרונות קיים בשביל שתי שניות אחת. אני כבר לא בחדר — ואת מוכנה.</p>
+  </section>
+
+  <section class="chapter chapter--center chapter--contact" data-chapter id="contact">
+    <p class="chapter__kicker"><span>08</span> קשר</p>
+    <h2 class="chapter__title">נדבר?</h2>
+    <p class="chapter__lead">תאריכים לעונה הקרובה נסגרים מוקדם.</p>
+    <p class="chapter__body">ספרי לי מתי, איפה, ואיך את מדמיינת את עצמך. אחזור אלייך עם הצעה, ועם תאריך לניסיון.</p>
+
+    <ul class="contact">
+      <li class="contact__item">
+        <span class="contact__label">וואטסאפ</span>
+        <a class="contact__value" href="https://wa.me/972500000000" rel="noopener">050-000-0000</a>
+      </li>
+      <li class="contact__item">
+        <span class="contact__label">אימייל</span>
+        <a class="contact__value" href="mailto:hello@example.com">hello@example.com</a>
+      </li>
+      <li class="contact__item">
+        <span class="contact__label">אינסטגרם</span>
+        <a class="contact__value" href="https://instagram.com/" rel="noopener">@example</a>
+      </li>
+      <li class="contact__item">
+        <span class="contact__label">אזור</span>
+        <span class="contact__value">מרכז הארץ · ניידת לכל הארץ</span>
+      </li>
+    </ul>
+
+    <p class="colophon">
+      עוצב ונבנה כחוויה אחת — WebGL2 · Gaussian Splatting · Image Sequence
+    </p>
+  </section>
+
+</main>
+
+<div class="scroll-track" aria-hidden="true"></div>
+
+<!-- custom cursor ---------------------------------------------------------- -->
+<div class="cursor" data-cursor aria-hidden="true">
+  <span class="cursor__ring" data-cursor-ring></span>
+  <span class="cursor__dot" data-cursor-dot></span>
+</div>
+
+<noscript>
+  <div class="noscript">
+    האתר הזה הוא חוויה תלת־ממדית בזמן אמת. כדי לצפות בו יש להפעיל JavaScript.
+    אפשר גם פשוט להתקשר: <a href="tel:+972500000000">050-000-0000</a>.
+  </div>
+</noscript>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
