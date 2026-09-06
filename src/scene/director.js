@@ -9,6 +9,11 @@ import { mat4, lerp, lerp3, clamp, smoothstep, damp, catmullRom3, noise3 } from 
 
 const GROUP_KEYS = ['skin', 'veil', 'flower', 'mote', 'lips', 'eyes'];
 
+// The aspect the chapter marks were framed against, and how far the fov may open
+// up to compensate on a narrower one. Past ~1.6x it starts to read as a fisheye.
+const REFERENCE_ASPECT = 16 / 9;
+const MAX_PORTRAIT_WIDEN = 1.6;
+
 const GRADE_SCALARS = [
   'exposure', 'contrast', 'saturation', 'vignette', 'grain',
   'bloomStrength', 'bloomThreshold', 'aberration', 'bleed',
@@ -29,6 +34,7 @@ export class Director {
     this.activeIndex = 0;
 
     this.pointer = { x: 0, y: 0, sx: 0, sy: 0, active: false };
+    this.aspect = REFERENCE_ASPECT;
 
     this.view = mat4.create();
     this.proj = mat4.create();
@@ -145,8 +151,18 @@ export class Director {
     // --- framing shift ------------------------------------------------------------
     // Slides the whole camera sideways/up so the object sits opposite the copy
     // instead of underneath it. Moving the camera right pushes the subject left.
-    const shiftR = lerp(a.camera.shift?.[0] ?? 0, b.camera.shift?.[0] ?? 0, eased);
-    const shiftU = lerp(a.camera.shift?.[1] ?? 0, b.camera.shift?.[1] ?? 0, eased);
+    let shiftR = lerp(a.camera.shift?.[0] ?? 0, b.camera.shift?.[0] ?? 0, eased);
+    let shiftU = lerp(a.camera.shift?.[1] ?? 0, b.camera.shift?.[1] ?? 0, eased);
+
+    // The lateral shift assumes a wide frame with room beside the subject. A
+    // portrait phone has none, so fade it out and lift the subject above the
+    // copy instead, which on narrow screens sits in the lower third.
+    const portrait = clamp(1 - this.aspect / REFERENCE_ASPECT, 0, 1);
+    if (portrait > 0) {
+      shiftR *= 1 - portrait;
+      shiftU -= portrait * 0.11 * flen;
+    }
+
     if (shiftR !== 0 || shiftU !== 0) {
       const dx0 = rx * shiftR + ux * shiftU;
       const dy0 = ry * shiftR + uy * shiftU;
@@ -277,7 +293,18 @@ export class Director {
     s.width = width;
     s.height = height;
     const aspect = width / height;
-    const fovY = (s.fov * Math.PI) / 180;
+    this.aspect = aspect;
+
+    // Every camera mark was framed for a 16:9 frame, and a perspective matrix
+    // fixes the VERTICAL field of view - so on a portrait phone the frame gets
+    // narrower while staying just as tall, and the subject runs off both sides.
+    // Widen the vertical fov on narrow viewports to hold the horizontal framing.
+    let fovY = (s.fov * Math.PI) / 180;
+    if (aspect < REFERENCE_ASPECT) {
+      const widen = Math.min(REFERENCE_ASPECT / aspect, MAX_PORTRAIT_WIDEN);
+      fovY = 2 * Math.atan(Math.tan(fovY / 2) * widen);
+    }
+
     mat4.perspective(this.proj, fovY, aspect, 0.1, 200);
     // pixel focal lengths, needed to project the 3D covariance into screen space
     s.focalX = (this.proj[0] * width) / 2;

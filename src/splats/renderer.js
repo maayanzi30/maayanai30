@@ -48,7 +48,12 @@ export class SplatRenderer {
     this.sortPending = false;
     this.sortGeneration = 0;
     this.lastSortKey = null;
-    this.worker = new Worker(new URL('./sort.worker.js', import.meta.url));
+    // A single-file build has no separate worker script to point at, so it
+    // installs a factory that returns a same-interface sorter instead.
+    const injected = globalThis.__splatSorterFactory;
+    this.worker = injected
+      ? injected()
+      : new Worker(new URL('./sort.worker.js', import.meta.url));
     this.worker.onmessage = (event) => {
       const msg = event.data;
       if (msg.type !== 'sorted') return;

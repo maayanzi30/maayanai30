@@ -7,6 +7,7 @@
 ```
 npm run dev              # שרת סטטי מקומי  → http://localhost:5173
 npm run sequence         # מייצר מחדש את רצף התמונות
+npm run standalone       # אורז את כל האתר לקובץ HTML אחד → dist/index.html
 npm run shots            # מצלם את כל הפרקים בדפדפן אמיתי*
 npm run check:fallbacks  # בודק reduced-motion ואת המצב בלי WebGL2*
 ```
@@ -121,6 +122,13 @@ halation, גריין, וינייטה, letterbox, ACES tonemap, ו‑lift/gain ל
 
 ---
 
+## קובץ יחיד
+
+`npm run standalone` אורז את הכל ל‑`dist/index.html` — המודולים מאוחדים, המיון
+רץ ב‑main thread דרך shim במקום ב‑worker, ורצף התמונות מוטמע כ‑data URIs.
+הקובץ לא מבצע אף בקשת רשת (חוץ מהפונטים), כך שהוא עובד גם מסביבה מבודדת או
+מכונן USB. ~2MB.
+
 ## ⚠️ לפני עלייה לאוויר
 
 פרטי הקשר ב‑`index.html` וב‑`src/scene/chapters.js` הם **placeholders**:
@@ -153,6 +161,7 @@ src/
 scripts/
   serve.mjs                 שרת פיתוח
   make-sequence.mjs         מחולל הפריימים
+  build-standalone.mjs      אריזה לקובץ HTML אחד (בלי בקשות רשת)
   screenshots.mjs           צילום כל הפרקים בדפדפן אמיתי (דורש playwright)
   check-fallbacks.mjs       בדיקת reduced-motion והמצב בלי WebGL2
 assets/sequence/            48 פריימים + manifest

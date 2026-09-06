@@ -93,6 +93,36 @@ export class SequenceLayer {
     return true;
   }
 
+  /**
+   * Frames already in memory as data URIs. Used by the single-file build, where
+   * there is nothing to fetch.
+   */
+  async loadInlineSequence(dataUris, aspect, onProgress) {
+    let loaded = 0;
+    const images = await Promise.all(dataUris.map(async (uri) => {
+      try {
+        const image = await loadImage(uri);
+        return image;
+      } catch {
+        return null;
+      } finally {
+        loaded++;
+        if (onProgress) onProgress(loaded / dataUris.length);
+      }
+    }));
+
+    this.frames = images.filter(Boolean);
+    this.frameCount = this.frames.length;
+    if (!this.frameCount) return false;
+
+    this.aspect = aspect || 16 / 9;
+    this._createTexture();
+    this.mode = 'sequence';
+    this.ready = true;
+    this.setPhase(0);
+    return true;
+  }
+
   /** Scrub a video instead of an image sequence. */
   async loadVideo(url) {
     const video = document.createElement('video');
