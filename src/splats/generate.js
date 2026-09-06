@@ -31,8 +31,8 @@ function headRelief(x, y, z) {
   const ax = Math.abs(x);
   const front = bell((z - 0.85) / 0.45);
   let d = 0;
-  d += 0.075 * bell((y - 0.25) / 0.13) * bell((z - 0.68) / 0.40) * bell(x / 0.60);   // brow ridge
-  d -= 0.026 * bell((ax - 0.30) / 0.17) * bell((y - 0.045) / 0.115) * front;         // eye sockets
+  d += 0.052 * bell((y - 0.25) / 0.14) * bell((z - 0.68) / 0.40) * bell(x / 0.60);   // brow ridge
+  d -= 0.022 * bell((ax - 0.30) / 0.17) * bell((y - 0.045) / 0.115) * front;         // eye sockets
   d += 0.070 * bell((ax - 0.46) / 0.19) * bell((y + 0.08) / 0.17) * bell((z - 0.54) / 0.32); // cheekbones
   d -= 0.042 * bell((ax - 0.30) / 0.20) * bell((y + 0.30) / 0.14) * front;           // under-cheek hollow
   d += 0.056 * bell(x / 0.27) * bell((y + 0.330) / 0.078) * front;                   // upper lip
@@ -160,22 +160,42 @@ const _pb = new Float32Array(3);
 const _pc = new Float32Array(3);
 
 function surfaceNormal(fn, u, v, out, arg) {
-  const e = 1e-3;
+  const e = 2e-3;
+  const vNext = v + e > 1 ? v - e : v + e;
+  const flip = v + e > 1 ? -1 : 1;
+
   if (arg === undefined) {
     fn(u, v, _pa);
     fn(u + e, v, _pb);
-    fn(u, Math.min(v + e, 1), _pc);
+    fn(u, vNext, _pc);
   } else {
     fn(u, v, arg, _pa);
     fn(u + e, v, arg, _pb);
-    fn(u, Math.min(v + e, 1), arg, _pc);
+    fn(u, vNext, arg, _pc);
   }
   const ax = _pb[0] - _pa[0], ay = _pb[1] - _pa[1], az = _pb[2] - _pa[2];
-  const bx = _pc[0] - _pa[0], by = _pc[1] - _pa[1], bz = _pc[2] - _pa[2];
-  let nx = ay * bz - az * by;
-  let ny = az * bx - ax * bz;
-  let nz = ax * by - ay * bx;
-  const len = Math.hypot(nx, ny, nz) || 1;
+  const bx = (_pc[0] - _pa[0]) * flip, by = (_pc[1] - _pa[1]) * flip, bz = (_pc[2] - _pa[2]) * flip;
+  // dv x du, not du x dv: for every surface here the u tangent runs clockwise
+  // seen from outside, so the other order yields an inward-facing normal and
+  // the whole bust ends up lit from behind.
+  let nx = by * az - bz * ay;
+  let ny = bz * ax - bx * az;
+  let nz = bx * ay - by * ax;
+  const len = Math.hypot(nx, ny, nz);
+
+  if (len < 1e-9) {
+    // Degenerate patch (a pole). Point away from the body axis, or straight up
+    // and down at the very top and bottom.
+    const rx = _pa[0], rz = _pa[2];
+    const rlen = Math.hypot(rx, rz);
+    if (rlen < 1e-6) {
+      out[0] = 0; out[1] = v < 0.5 ? 1 : -1; out[2] = 0;
+    } else {
+      out[0] = rx / rlen; out[1] = 0; out[2] = rz / rlen;
+    }
+    return out;
+  }
+
   out[0] = nx / len; out[1] = ny / len; out[2] = nz / len;
   return out;
 }
@@ -188,8 +208,9 @@ const R2_A1 = 0.7548776662466927;   // 1/plastic
 const R2_A2 = 0.5698402909980532;   // 1/plastic^2
 
 function fibonacciSphere(i, n, out) {
-  out[0] = (i * GOLDEN) % 1;                       // azimuth
-  out[1] = Math.acos(1 - 2 * (i + 0.5) / n) / Math.PI;  // polar, equal-area
+  out[0] = (i * GOLDEN) % 1;                            // azimuth
+  const polar = Math.acos(1 - 2 * (i + 0.5) / n) / Math.PI;
+  out[1] = clamp(polar, 0.012, 0.988);                  // never sample the poles
   return out;
 }
 
@@ -241,13 +262,13 @@ function headUVFromLocal(xl, yl, side) {
 
 // --- palette --------------------------------------------------------------------
 
-const SKIN_BASE = [0.955, 0.876, 0.822];
+const SKIN_BASE = [0.860, 0.785, 0.735];
 const SKIN_SHADOW = [0.78, 0.66, 0.62];
 const LIP_BASE = [0.79, 0.455, 0.435];
 const EYE_BASE = [0.850, 0.760, 0.730];
-const LASH = [0.180, 0.135, 0.130];
-const BROW_BASE = [0.455, 0.355, 0.310];
-const VEIL_BASE = [0.975, 0.955, 0.935];
+const LASH = [0.360, 0.280, 0.270];
+const BROW_BASE = [0.640, 0.530, 0.480];
+const VEIL_BASE = [0.930, 0.910, 0.895];
 const PETAL_BASE = [0.930, 0.885, 0.870];
 const PETAL_BLUSH = [0.96, 0.80, 0.78];
 const GOLD = [1.0, 0.84, 0.52];
@@ -443,12 +464,12 @@ export async function generateBridalSplats({ count = 150000, seed = 20260906, on
     // The lash line is what makes an eye read as an eye. It sits on the lower
     // margin of the lid and darkens sharply.
     (dx, dy, side, out) => {
-      const lash = smoothstep(-0.52, -0.88, dy);
+      const lash = smoothstep(-0.60, -0.92, dy);
       if (lash <= 0.01) return undefined;
       out[0] = lerp(out[0], LASH[0], lash);
       out[1] = lerp(out[1], LASH[1], lash);
       out[2] = lerp(out[2], LASH[2], lash);
-      return 0.0062 * (0.55 + 0.45 * (1 - lash));
+      return 0.0090 * (0.60 + 0.40 * (1 - lash));
     }
   );
 
@@ -457,13 +478,13 @@ export async function generateBridalSplats({ count = 150000, seed = 20260906, on
     nBrows,
     (dx, dy) => {
       const side = rand() < 0.5 ? -1 : 1;
-      const xl = 0.300 + dx * 0.215;
+      const xl = 0.330 + dx * 0.170;
       const arch = 0.052 - 0.30 * (dx + 0.15) * (dx + 0.15);
-      const yl = 0.248 + xl * 0.14 + arch + dy * 0.022;
+      const yl = 0.248 + xl * 0.14 + arch + dy * 0.026;
       const [u, v] = headUVFromLocal(xl, yl, side);
       return [u, v, side];
     },
-    BROW_BASE, 0.0050, 0.40, GROUP.SKIN
+    BROW_BASE, 0.0075, 0.22, GROUP.SKIN
   );
 
   // --- veil ---------------------------------------------------------------------

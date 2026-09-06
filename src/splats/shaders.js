@@ -166,10 +166,10 @@ void main() {
 
   vec3 warm = vec3(1.0, 0.93, 0.84);
   vec3 cool = vec3(0.62, 0.60, 0.66);
-  vec3 lit = base * (0.28 + 0.84 * key) * warm;
-  lit += base * cool * (0.22 * (1.0 - key) + 0.14 * fill);          // bounce
-  lit += vec3(1.0, 0.92, 0.82) * rim * (0.20 + 0.60 * float(group == 1));
-  lit += vec3(1.0, 0.88, 0.66) * pow(max(ndl, 0.0), 22.0) * 0.55;   // specular glint
+  vec3 lit = base * (0.14 + 0.74 * key) * warm;
+  lit += base * cool * (0.18 * (1.0 - key) + 0.11 * fill);          // bounce
+  lit += vec3(1.0, 0.92, 0.82) * rim * (0.18 + 0.55 * float(group == 1));
+  lit += vec3(1.0, 0.88, 0.66) * pow(max(ndl, 0.0), 22.0) * 0.30;   // specular glint
 
   v_color = vec4(lit * u_exposure, clamp(opacity * groupAlpha, 0.0, 1.0));
   v_corner = a_corner;

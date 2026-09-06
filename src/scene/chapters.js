@@ -42,7 +42,7 @@ export const SHADES = {
 };
 
 const BASE_GRADE = {
-  exposure: 1.12,
+  exposure: 0.95,
   contrast: 1.06,
   saturation: 1.04,
   lift: [0.008, 0.005, 0.010],
@@ -50,7 +50,7 @@ const BASE_GRADE = {
   vignette: 0.62,
   grain: 0.045,
   bloomStrength: 0.55,
-  bloomThreshold: 0.72,
+  bloomThreshold: 0.86,
   bloomTint: [1.0, 0.88, 0.74],
   aberration: 0.22,
   bleed: 0.0,
