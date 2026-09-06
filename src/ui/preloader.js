@@ -52,9 +52,25 @@ export class Preloader {
     });
   }
 
+  /**
+   * Something went wrong (no WebGL2, or a load failure). Show why, and give the
+   * visitor a way past this overlay - otherwise the fallback document sits
+   * underneath a full-screen panel nobody can dismiss.
+   */
   fail(message) {
     cancelAnimationFrame(this._raf);
-    this.root.classList.add('is-failed');
+    this.root.classList.add('is-failed', 'is-ready');
     this.setLabel(message);
+
+    if (!this.enter) {
+      this.root.setAttribute('hidden', '');
+      return;
+    }
+    const label = this.enter.querySelector('span') || this.enter;
+    label.textContent = 'המשך לתוכן';
+    this.enter.addEventListener('click', () => {
+      this.root.classList.add('is-leaving');
+      setTimeout(() => this.root.setAttribute('hidden', ''), 900);
+    }, { once: true });
   }
 }

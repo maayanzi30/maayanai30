@@ -7,7 +7,7 @@
 // the renderer: swap in a .ply/.splat from an actual scan and the same pipeline
 // draws it. See src/splats/loader.js.
 
-import { mulberry32, fbm3, quatFromNormal, smoothstep, clamp } from '../core/math.js';
+import { mulberry32, fbm3, quatFromNormal, smoothstep, clamp, lerp } from '../core/math.js';
 
 export const GROUP = {
   SKIN: 0,
@@ -18,7 +18,7 @@ export const GROUP = {
   EYES: 5,
 };
 
-const HEAD = { cy: 1.52, rx: 0.60, ry: 0.78, rz: 0.62 };
+const HEAD = { cy: 1.52, rx: 0.555, ry: 0.80, rz: 0.615 };
 
 // --- surfaces -----------------------------------------------------------------
 
@@ -29,13 +29,19 @@ const bell = (t) => Math.exp(-t * t);
 
 function headRelief(x, y, z) {
   const ax = Math.abs(x);
+  const front = bell((z - 0.85) / 0.45);
   let d = 0;
-  d += 0.032 * bell((y - 0.24) / 0.13) * bell((z - 0.70) / 0.42) * bell(x / 0.62);   // brow
-  d -= 0.028 * bell((ax - 0.30) / 0.15) * bell((y - 0.05) / 0.11) * bell((z - 0.80) / 0.26); // sockets
-  d += 0.032 * bell((ax - 0.45) / 0.20) * bell((y + 0.08) / 0.18) * bell((z - 0.56) / 0.32); // cheekbones
-  d += 0.020 * bell(x / 0.23) * bell((y + 0.40) / 0.090) * bell((z - 0.80) / 0.24);  // mouth
-  d += 0.028 * bell(x / 0.26) * bell((y + 0.70) / 0.17) * bell((z - 0.58) / 0.32);   // chin
-  d -= 0.022 * bell((ax - 0.76) / 0.22) * bell((y - 0.30) / 0.26);                   // temples
+  d += 0.075 * bell((y - 0.25) / 0.13) * bell((z - 0.68) / 0.40) * bell(x / 0.60);   // brow ridge
+  d -= 0.026 * bell((ax - 0.30) / 0.17) * bell((y - 0.045) / 0.115) * front;         // eye sockets
+  d += 0.070 * bell((ax - 0.46) / 0.19) * bell((y + 0.08) / 0.17) * bell((z - 0.54) / 0.32); // cheekbones
+  d -= 0.042 * bell((ax - 0.30) / 0.20) * bell((y + 0.30) / 0.14) * front;           // under-cheek hollow
+  d += 0.056 * bell(x / 0.27) * bell((y + 0.330) / 0.078) * front;                   // upper lip
+  d += 0.062 * bell(x / 0.27) * bell((y + 0.462) / 0.082) * front;                   // lower lip
+  d -= 0.040 * bell(x / 0.30) * bell((y + 0.395) / 0.024) * front;                   // the mouth line
+  d -= 0.036 * bell(x / 0.34) * bell((y + 0.555) / 0.055) * front;                   // under the lip
+  d += 0.060 * bell(x / 0.27) * bell((y + 0.71) / 0.16) * bell((z - 0.56) / 0.32);   // chin
+  d -= 0.038 * bell((ax - 0.78) / 0.22) * bell((y - 0.28) / 0.26);                   // temples
+  d -= 0.034 * bell((ax - 0.52) / 0.16) * bell((y + 0.52) / 0.18) * bell((z - 0.40) / 0.30); // jaw
   return d;
 }
 
@@ -48,7 +54,7 @@ function headPoint(u, v, out) {
   const z = sp * Math.cos(theta);   // +Z is the face
 
   const down = Math.max(0, -y);
-  const taper = 1 - 0.42 * Math.pow(down, 1.5);       // jaw and chin
+  const taper = 1 - 0.52 * Math.pow(down, 1.45);      // jaw and chin
   const crown = 1 - 0.07 * Math.pow(Math.max(0, y), 3);
   const occiput = z < 0 ? 1.06 : 1.0;                 // fuller at the back of the skull
 
@@ -62,9 +68,9 @@ function headPoint(u, v, out) {
   pz += z * relief;
 
   // the nose pushes forward only, and tips down a little
-  const nose = bell(x / 0.115) * bell((y + 0.02) / 0.23) * bell((z - 0.92) / 0.30);
-  pz += nose * 0.062;
-  py -= nose * 0.012;
+  const nose = bell(x / 0.105) * bell((y + 0.03) / 0.22) * bell((z - 0.93) / 0.28);
+  pz += nose * 0.115;
+  py -= nose * 0.016;
 
   out[0] = px; out[1] = py; out[2] = pz;
   return out;
@@ -94,24 +100,56 @@ function torsoPoint(u, v, out) {
   return out;
 }
 
+// Silhouette radius of the bust at a given height. The veil is clamped outside
+// this, otherwise the cloth passes straight through the skull and the shoulders.
+function bodyRadius(y) {
+  let r = 0;
+  const t = (y - HEAD.cy) / HEAD.ry;
+  if (Math.abs(t) < 1) {
+    // +6% covers the occiput and the cheekbone relief, which push past the
+    // plain ellipsoid the rest of this formula describes.
+    r = HEAD.rx * Math.sqrt(1 - t * t) * (1 - 0.52 * Math.pow(Math.max(0, -t), 1.45)) * 1.06;
+  }
+  if (y < 0.95 && y > 0.40) r = Math.max(r, 0.185 + (0.92 - y) * 0.21);
+  if (y < 0.56) {
+    const v = clamp((0.54 - y) / 1.28, 0, 1);
+    r = Math.max(r, 0.24 + 1.02 * smoothstep(0, 0.55, v));
+  }
+  return r;
+}
+
 function veilPoint(u, v, layer, out) {
   const theta = u * Math.PI * 2;
   const frontness = Math.cos(theta);
   const open = smoothstep(0.10, 0.95, frontness);     // eased away from the face
 
   const fall = Math.pow(v, 1.10);
-  const y = 2.24 - fall * 3.30;
+  const y = 2.42 - fall * 3.48;
 
   // The hem stays well inside the closest camera mark: a veil that reaches past
   // the lens turns into full-screen streaks the moment the camera moves in.
-  const base = 0.33 + 0.80 * Math.pow(v, 1.30) + layer * 0.055;
-  const folds = 0.075 * Math.sin(theta * 8.0 + v * 5.0 + layer * 2.1) * Math.pow(v, 0.70);
-  const ripple = 0.055 * fbm3(Math.cos(theta) * 2.1, Math.sin(theta) * 2.1, v * 3.0 + layer * 5.0, 3);
-  const r = (base + folds + ripple) * (1 + 0.18 * open);
+  const base = 0.30 + 0.82 * Math.pow(v, 1.30) + layer * 0.042;
+  // Folds come mostly from noise; a pure sine reads as combed hair, not tulle.
+  const folds = 0.048 * Math.sin(theta * 4.0 + v * 2.6 + layer * 2.1) * Math.pow(v, 0.70);
+  const ripple = 0.085 * fbm3(Math.cos(theta) * 1.5, Math.sin(theta) * 1.5, v * 1.9 + layer * 5.0, 4);
+  // The height wobble has to be resolved before the clearance test, or a splat
+  // clamped for one height ends up at another where the bust is wider.
+  const yFinal = y + 0.08 * Math.sin(theta * 3.0 + layer) * v;
 
-  out[0] = Math.sin(theta) * r;
-  out[1] = y + 0.08 * Math.sin(theta * 3.0 + layer) * v;
-  out[2] = Math.cos(theta) * r - 0.30 * v;
+  const drape = (base + folds + ripple) * (1 + 0.18 * open);
+
+  // Place the point first (including the backward drift), then push it out along
+  // the body axis until it clears. Clamping the radius before the drift lets the
+  // front of the veil slide back inside the face.
+  const px = Math.sin(theta) * drape;
+  const pz = Math.cos(theta) * drape - 0.30 * v;
+  const rad = Math.hypot(px, pz);
+  const need = bodyRadius(yFinal) + 0.130 + layer * 0.038;
+  const push = rad < need ? need / Math.max(rad, 1e-4) : 1;
+
+  out[0] = px * push;
+  out[1] = yFinal;
+  out[2] = pz * push;
   return out;
 }
 
@@ -139,6 +177,25 @@ function surfaceNormal(fn, u, v, out, arg) {
   let nz = ax * by - ay * bx;
   const len = Math.hypot(nx, ny, nz) || 1;
   out[0] = nx / len; out[1] = ny / len; out[2] = nz / len;
+  return out;
+}
+
+// Pure random sampling clumps, and a clumped splat cloud reads as noise rather
+// than a surface. These low-discrepancy sequences spread samples evenly:
+// a Fibonacci spiral over the sphere, and the R2 sequence over a unit square.
+const GOLDEN = 0.6180339887498949;
+const R2_A1 = 0.7548776662466927;   // 1/plastic
+const R2_A2 = 0.5698402909980532;   // 1/plastic^2
+
+function fibonacciSphere(i, n, out) {
+  out[0] = (i * GOLDEN) % 1;                       // azimuth
+  out[1] = Math.acos(1 - 2 * (i + 0.5) / n) / Math.PI;  // polar, equal-area
+  return out;
+}
+
+function r2(i, out) {
+  out[0] = (0.5 + R2_A1 * i) % 1;
+  out[1] = (0.5 + R2_A2 * i) % 1;
   return out;
 }
 
@@ -186,10 +243,12 @@ function headUVFromLocal(xl, yl, side) {
 
 const SKIN_BASE = [0.955, 0.876, 0.822];
 const SKIN_SHADOW = [0.78, 0.66, 0.62];
-const LIP_BASE = [0.80, 0.40, 0.38];
-const EYE_BASE = [0.74, 0.63, 0.60];
+const LIP_BASE = [0.79, 0.455, 0.435];
+const EYE_BASE = [0.850, 0.760, 0.730];
+const LASH = [0.180, 0.135, 0.130];
+const BROW_BASE = [0.455, 0.355, 0.310];
 const VEIL_BASE = [0.975, 0.955, 0.935];
-const PETAL_BASE = [0.985, 0.935, 0.915];
+const PETAL_BASE = [0.930, 0.885, 0.870];
 const PETAL_BLUSH = [0.96, 0.80, 0.78];
 const GOLD = [1.0, 0.84, 0.52];
 
@@ -204,13 +263,17 @@ const GOLD = [1.0, 0.84, 0.52];
 export async function generateBridalSplats({ count = 150000, seed = 20260906, onProgress } = {}) {
   const rand = mulberry32(seed);
 
+  // Reference tuning was done at 175k splats.
+  const spread = Math.sqrt(175000 / Math.max(count, 1));
+
   const mix = {
-    skin: 0.35,
-    veil: 0.33,
+    skin: 0.37,
+    veil: 0.35,
     flower: 0.09,
-    lips: 0.05,
-    eyes: 0.06,
-    mote: 0.12,
+    lips: 0.055,
+    eyes: 0.060,
+    brows: 0.016,
+    mote: 0.07,
   };
 
   const nSkin = Math.floor(count * mix.skin);
@@ -218,7 +281,8 @@ export async function generateBridalSplats({ count = 150000, seed = 20260906, on
   const nFlower = Math.floor(count * mix.flower);
   const nLips = Math.floor(count * mix.lips);
   const nEyes = Math.floor(count * mix.eyes);
-  const nMote = count - nSkin - nVeil - nFlower - nLips - nEyes;
+  const nBrows = Math.floor(count * mix.brows);
+  const nMote = count - nSkin - nVeil - nFlower - nLips - nEyes - nBrows;
 
   const texWidth = 2048;
   const texHeight = Math.ceil(count / texWidth);
@@ -260,68 +324,68 @@ export async function generateBridalSplats({ count = 150000, seed = 20260906, on
   };
 
   // --- bust: head, neck, torso --------------------------------------------------
-  const headShare = 0.56, neckShare = 0.10;
-  for (let k = 0; k < nSkin; k++) {
-    const roll = rand();
-    let px, py, pz;
+  const nHead = Math.floor(nSkin * 0.64);
+  const nNeck = Math.floor(nSkin * 0.10);
+  const nTorso = nSkin - nHead - nNeck;
+  const uv = [0, 0];
 
-    if (roll < headShare) {
-      // cosine-ish latitude sampling keeps density even over the sphere
-      const u = rand();
-      const v = Math.acos(1 - 2 * rand()) / Math.PI;
-      headPoint(u, v, p);
-      surfaceNormal(headPoint, u, v, n);
-    } else if (roll < headShare + neckShare) {
-      const u = rand(), v = rand();
-      neckPoint(u, v, p);
-      surfaceNormal(neckPoint, u, v, n);
-    } else {
-      const u = rand(), v = Math.pow(rand(), 0.85);
-      torsoPoint(u, v, p);
-      surfaceNormal(torsoPoint, u, v, n);
+  const bustSplat = async (count, surface, sample, sizeScale) => {
+    for (let k = 0; k < count; k++) {
+      sample(k, count, uv);
+      const u = uv[0], v = uv[1];
+      surface(u, v, p);
+      surfaceNormal(surface, u, v, n);
+
+      // a little surface thickness so it reads as volume, not a shell
+      const jitter = (rand() - 0.5) * 0.005;
+      const px = p[0] + n[0] * jitter;
+      const py = p[1] + n[1] * jitter;
+      const pz = p[2] + n[2] * jitter;
+
+      const zone = classifyHead(p);
+      const grain = fbm3(px * 14.0, py * 14.0, pz * 14.0, 2);
+      const ao = clamp(0.62 + 0.5 * n[1] + 0.22 * n[2], 0.35, 1.15);
+
+      let base = SKIN_BASE, opacity = 0.60, size = 0.0140 * sizeScale * spread;
+      if (zone.group === GROUP.LIPS) {
+        base = LIP_BASE; size = 0.0110 * spread; opacity = 0.70;
+      } else if (zone.group === GROUP.EYES) {
+        base = EYE_BASE; size = 0.0115 * spread; opacity = 0.68;
+      }
+
+      // the torso fades into darkness rather than ending on a hard edge
+      if (py < 0.35) opacity *= clamp((py + 0.95) / 1.25, 0.0, 1.0);
+
+      const shade = clamp(ao + grain * 0.045, 0.3, 1.2);
+      const r = clamp((base[0] * shade) * 0.86 + SKIN_SHADOW[0] * 0.14, 0, 1.4);
+      const g = clamp((base[1] * shade) * 0.86 + SKIN_SHADOW[1] * 0.14, 0, 1.4);
+      const b = clamp((base[2] * shade) * 0.86 + SKIN_SHADOW[2] * 0.14, 0, 1.4);
+
+      const sz = size * (0.90 + rand() * 0.24);
+      write(px, py, pz, n[0], n[1], n[2], sz, sz, sz * 0.20, r, g, b, opacity, zone.group);
+
+      processed++;
+      if ((k & 2047) === 0) await breathe();
     }
+  };
 
-    // a little surface thickness so it reads as volume, not a shell
-    const jitter = (rand() - 0.5) * 0.016;
-    px = p[0] + n[0] * jitter;
-    py = p[1] + n[1] * jitter;
-    pz = p[2] + n[2] * jitter;
-
-    const zone = classifyHead(p);
-    const grain = fbm3(px * 5.5, py * 5.5, pz * 5.5, 3);
-    const ao = clamp(0.62 + 0.5 * n[1] + 0.22 * n[2], 0.35, 1.15);
-
-    let base = SKIN_BASE, opacity = 0.88, size = 0.0165;
-    if (zone.group === GROUP.LIPS) {
-      base = LIP_BASE; size = 0.0125; opacity = 0.94;
-    } else if (zone.group === GROUP.EYES) {
-      base = EYE_BASE; size = 0.0130; opacity = 0.92;
-    }
-
-    // the torso fades into darkness rather than ending on a hard edge
-    if (py < 0.35) opacity *= clamp((py + 0.95) / 1.25, 0.0, 1.0);
-
-    const shade = clamp(ao + grain * 0.10, 0.3, 1.2);
-    const r = clamp((base[0] * shade) * 0.86 + SKIN_SHADOW[0] * 0.14, 0, 1.4);
-    const g = clamp((base[1] * shade) * 0.86 + SKIN_SHADOW[1] * 0.14, 0, 1.4);
-    const b = clamp((base[2] * shade) * 0.86 + SKIN_SHADOW[2] * 0.14, 0, 1.4);
-
-    const s = size * (0.8 + rand() * 0.5);
-    write(px, py, pz, n[0], n[1], n[2], s, s, s * 0.20, r, g, b, opacity, zone.group);
-
-    processed++;
-    if ((k & 2047) === 0) await breathe();
-  }
+  await bustSplat(nHead, headPoint, fibonacciSphere, 1.0);
+  await bustSplat(nNeck, neckPoint, (i, n2, o) => r2(i, o), 1.15);
+  await bustSplat(nTorso, torsoPoint, (i, n2, o) => { r2(i, o); o[1] = Math.pow(o[1], 0.85); }, 1.55);
 
   // --- makeup zones -------------------------------------------------------------
   // Lips and lids get their own dense pass. These are the splats the palette
   // interaction repaints, so they carry the detail that makes the shade read.
-  const zonePass = async (n, sampler, base, size, opacity, group) => {
+  const zonePass = async (n, sampler, base, size, opacity, group, detail) => {
+    const mixed = [0, 0, 0];
     for (let k = 0; k < n; k++) {
-      // uniform point in the unit disc, pulled slightly toward the centre
-      const a = rand() * Math.PI * 2;
-      const rr = Math.pow(rand(), 0.62);
-      const [u, v, side] = sampler(Math.cos(a) * rr, Math.sin(a) * rr);
+      // evenly spread over the unit disc, pulled slightly toward the centre
+      r2(k, uv);
+      const a = uv[0] * Math.PI * 2;
+      const rr = Math.pow(uv[1], 0.62);
+      const dx = Math.cos(a) * rr;
+      const dy = Math.sin(a) * rr;
+      const [u, v, side] = sampler(dx, dy);
 
       headPoint(u, v, p);
       surfaceNormal(headPoint, u, v, n1);
@@ -334,12 +398,16 @@ export async function generateBridalSplats({ count = 150000, seed = 20260906, on
       const edge = 1 - smoothstep(0.72, 1.0, rr);
       const grain = fbm3(px * 26.0, py * 26.0, pz * 26.0, 2);
       const shade = 0.82 + 0.30 * grain + 0.16 * (1 - rr);
-      const s = size * (0.7 + rand() * 0.6);
+
+      mixed[0] = base[0]; mixed[1] = base[1]; mixed[2] = base[2];
+      let alpha = opacity * (0.35 + 0.65 * edge);
+      let s = size * spread * (0.7 + rand() * 0.6);
+      if (detail) s = (detail(dx, dy, side, mixed, rr) ?? (s / spread)) * spread;
 
       write(
         px, py, pz, n1[0], n1[1], n1[2], s, s, s * 0.16,
-        base[0] * shade, base[1] * shade, base[2] * shade,
-        opacity * (0.35 + 0.65 * edge), group
+        mixed[0] * shade, mixed[1] * shade, mixed[2] * shade,
+        alpha, group
       );
       processed++;
       if ((k & 2047) === 0) await breathe();
@@ -350,32 +418,61 @@ export async function generateBridalSplats({ count = 150000, seed = 20260906, on
   await zonePass(
     nLips,
     (dx, dy) => {
-      const xl = dx * 0.30;
-      const yl = -0.395 + dy * 0.118;
+      // two lobes around the mouth line, wider at the centre
+      const xl = dx * 0.330;
+      const bow = 0.030 * bell(dx / 0.45);
+      const yl = -0.398 + bow * Math.sign(dy || 1) + dy * 0.118 * (1 - 0.30 * Math.abs(dx));
       const [u, v] = headUVFromLocal(xl, yl, 1);
       return [u, v, 1];
     },
-    LIP_BASE, 0.0072, 0.96, GROUP.LIPS
+    LIP_BASE, 0.0064, 0.72, GROUP.LIPS
   );
 
   await zonePass(
     nEyes,
     (dx, dy) => {
+      // almond lid: tilted up toward the temple, tapering at both corners
       const side = rand() < 0.5 ? -1 : 1;
-      const xl = 0.315 + dx * 0.20;
-      const yl = 0.075 + xl * 0.16 + dy * 0.118;
+      const xl = 0.312 + dx * 0.185;
+      const taperY = 0.105 * (1 - 0.40 * Math.abs(dx));
+      const yl = 0.062 + xl * 0.20 + dy * taperY;
       const [u, v] = headUVFromLocal(xl, yl, side);
       return [u, v, side];
     },
-    EYE_BASE, 0.0075, 0.94, GROUP.EYES
+    EYE_BASE, 0.0068, 0.70, GROUP.EYES,
+    // The lash line is what makes an eye read as an eye. It sits on the lower
+    // margin of the lid and darkens sharply.
+    (dx, dy, side, out) => {
+      const lash = smoothstep(-0.52, -0.88, dy);
+      if (lash <= 0.01) return undefined;
+      out[0] = lerp(out[0], LASH[0], lash);
+      out[1] = lerp(out[1], LASH[1], lash);
+      out[2] = lerp(out[2], LASH[2], lash);
+      return 0.0062 * (0.55 + 0.45 * (1 - lash));
+    }
+  );
+
+  // brow: a thin arc riding the brow ridge
+  await zonePass(
+    nBrows,
+    (dx, dy) => {
+      const side = rand() < 0.5 ? -1 : 1;
+      const xl = 0.300 + dx * 0.215;
+      const arch = 0.052 - 0.30 * (dx + 0.15) * (dx + 0.15);
+      const yl = 0.248 + xl * 0.14 + arch + dy * 0.022;
+      const [u, v] = headUVFromLocal(xl, yl, side);
+      return [u, v, side];
+    },
+    BROW_BASE, 0.0050, 0.40, GROUP.SKIN
   );
 
   // --- veil ---------------------------------------------------------------------
-  const layers = 3;
+  const layers = 5;
   for (let k = 0; k < nVeil; k++) {
     const layer = k % layers;
-    const u = rand();
-    const v = Math.pow(rand(), 0.78);
+    r2(Math.floor(k / layers), uv);
+    const u = uv[0];
+    const v = Math.pow(uv[1], 0.78);
     veilPoint(u, v, layer, p);
     surfaceNormal(veilPoint, u, v, n, layer);
 
@@ -389,8 +486,8 @@ export async function generateBridalSplats({ count = 150000, seed = 20260906, on
     const hem = 1 - smoothstep(0.82, 1.0, v);                    // dissolves at the hem
     const weave = 0.5 + 0.5 * fbm3(px * 9.0, py * 9.0, pz * 9.0, 2);
 
-    const opacity = (0.030 + 0.055 * weave) * sheer * hem * (0.6 + rand() * 0.7);
-    const s = 0.014 + rand() * 0.014;
+    const opacity = (0.013 + 0.024 * weave) * sheer * hem * (0.55 + rand() * 0.75);
+    const s = (0.032 + rand() * 0.030) * spread;
     const glint = 1 + 0.35 * Math.pow(weave, 6);
 
     write(
@@ -445,13 +542,13 @@ export async function generateBridalSplats({ count = 150000, seed = 20260906, on
     const blush = rand();
     const base = core ? GOLD : (blush > 0.72 ? PETAL_BLUSH : PETAL_BASE);
     const shade = 0.75 + 0.45 * rand();
-    const s = (core ? 0.0045 : 0.0080) * (0.75 + rand() * 0.6);
+    const s = (core ? 0.0045 : 0.0080) * spread * (0.75 + rand() * 0.6);
 
     write(
       px, py, pz, nx / len, ny / len, nz / len,
       s, s, s * (core ? 0.9 : 0.22),
       base[0] * shade, base[1] * shade, base[2] * shade,
-      core ? 0.9 : 0.72, GROUP.FLOWER
+      core ? 0.85 : 0.62, GROUP.FLOWER
     );
 
     processed++;
@@ -460,15 +557,16 @@ export async function generateBridalSplats({ count = 150000, seed = 20260906, on
 
   // --- motes --------------------------------------------------------------------
   for (let k = 0; k < nMote; k++) {
+    // Kept outside the object so a close camera mark never sits inside the haze.
     const a = rand() * Math.PI * 2;
-    const r = 0.9 + Math.pow(rand(), 0.55) * 2.6;
-    const py = -1.4 + Math.pow(rand(), 0.8) * 4.9;
+    const r = 1.75 + Math.pow(rand(), 0.55) * 2.4;
+    const py = -1.2 + Math.pow(rand(), 0.85) * 4.6;
     const px = Math.sin(a) * r;
     const pz = Math.cos(a) * r;
 
-    const s = 0.005 + Math.pow(rand(), 3) * 0.016;
+    const s = (0.004 + Math.pow(rand(), 3.2) * 0.011) * spread;
     const warm = 0.75 + rand() * 0.5;
-    const opacity = 0.20 + Math.pow(rand(), 2.2) * 0.55;
+    const opacity = 0.14 + Math.pow(rand(), 2.4) * 0.42;
 
     write(
       px, py, pz, rand() - 0.5, rand() - 0.5, rand() - 0.5,

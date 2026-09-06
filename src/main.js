@@ -20,19 +20,26 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matc
 
 // --- quality tiers ---------------------------------------------------------------
 
+const QUALITY_TIERS = {
+  mobile: { splats: 80000, maxDpr: 1.25, label: 'mobile' },
+  balanced: { splats: 200000, maxDpr: 1.5, label: 'balanced' },
+  high: { splats: 320000, maxDpr: 1.75, label: 'high' },
+};
+
 function pickQuality() {
+  // ?quality=high|balanced|mobile pins a tier, which is how the render is checked
+  // on a machine that does not report the hardware it actually has.
+  const forced = new URLSearchParams(location.search).get('quality');
+  if (forced && QUALITY_TIERS[forced]) return QUALITY_TIERS[forced];
+
   const cores = navigator.hardwareConcurrency || 4;
   const memory = navigator.deviceMemory || 4;
   const coarse = window.matchMedia('(pointer: coarse)').matches;
   const small = Math.min(window.innerWidth, window.innerHeight) < 700;
 
-  if (coarse || small || cores <= 4 || memory <= 3) {
-    return { splats: 60000, maxDpr: 1.25, label: 'mobile' };
-  }
-  if (cores <= 8 || memory <= 6) {
-    return { splats: 120000, maxDpr: 1.5, label: 'balanced' };
-  }
-  return { splats: 175000, maxDpr: 1.75, label: 'high' };
+  if (coarse || small || cores <= 4 || memory <= 3) return QUALITY_TIERS.mobile;
+  if (cores <= 8 || memory <= 6) return QUALITY_TIERS.balanced;
+  return QUALITY_TIERS.high;
 }
 
 // --- boot --------------------------------------------------------------------------
@@ -41,8 +48,7 @@ async function boot() {
   const context = createContext(canvas);
   if (!context) {
     html.classList.add('no-webgl');
-    preloader.fail('הדפדפן הזה לא תומך ב־WebGL2 — התוכן זמין כטקסט למטה.');
-    document.querySelector('[data-preloader-enter]')?.removeAttribute('hidden');
+    preloader.fail('הדפדפן הזה לא תומך ב־WebGL2 — התוכן זמין כטקסט.');
     setupFallbackScroll();
     return;
   }
@@ -230,6 +236,6 @@ function setupFallbackScroll() {
 boot().catch((error) => {
   console.error(error);
   html.classList.add('no-webgl');
-  preloader.fail('משהו נתקע בטעינה — התוכן זמין כטקסט למטה.');
+  preloader.fail('משהו נתקע בטעינה — התוכן זמין כטקסט.');
   setupFallbackScroll();
 });

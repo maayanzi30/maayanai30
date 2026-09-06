@@ -134,7 +134,7 @@ export class Director {
     const flen = Math.hypot(fx, fy, fz) || 1;
     fx /= flen; fy /= flen; fz /= flen;
 
-    let rx = fz, ry = 0, rz = -fx;             // forward x world-up
+    let rx = -fz, ry = 0, rz = fx;             // forward x world-up
     const rlen = Math.hypot(rx, ry, rz) || 1;
     rx /= rlen; ry /= rlen; rz /= rlen;
 
@@ -241,13 +241,13 @@ export class Director {
     const manual = lightIndex >= 0 ? clamp(1 - Math.abs(t - lightIndex) / 0.85, 0, 1) : 0;
 
     const orbit = time * 0.11;
-    const autoX = Math.cos(orbit) * 0.75;
-    const autoY = 0.60 + Math.sin(orbit * 0.7) * 0.15;
-    const autoZ = Math.sin(orbit) * 0.55 + 0.35;
+    const autoX = Math.cos(orbit) * 0.62;
+    const autoY = 0.86 + Math.sin(orbit * 0.7) * 0.12;
+    const autoZ = 0.58 + Math.sin(orbit) * 0.32;      // always in front of the face
 
-    const manualX = this.pointer.sx * 1.5;
-    const manualY = 0.35 - this.pointer.sy * 1.1;
-    const manualZ = 0.85;
+    const manualX = this.pointer.sx * 1.35;
+    const manualY = 0.58 - this.pointer.sy * 0.85;    // stays above the horizon
+    const manualZ = 0.78;
 
     const lx = lerp(autoX, manualX, manual);
     const ly = lerp(autoY, manualY, manual);

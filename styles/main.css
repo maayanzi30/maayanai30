@@ -18,7 +18,7 @@
   --body: 'Assistant', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --gutter: clamp(1.25rem, 4vw, 4rem);
-  --rail: clamp(2.75rem, 5vw, 5rem);
+  --rail: clamp(3rem, 7.5vw, 8.5rem);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -174,9 +174,12 @@ a { color: inherit; text-decoration: none; }
   color: rgba(243, 236, 228, 0.22);
 }
 
-.preloader.is-failed .preloader__enter,
 .preloader.is-failed .preloader__meter,
-.preloader.is-failed .preloader__value { display: none; }
+.preloader.is-failed .preloader__value,
+.preloader.is-failed .preloader__note { display: none; }
+
+.preloader.is-failed .preloader__status { justify-content: center; }
+.preloader.is-failed [data-preloader-label] { max-width: 26rem; line-height: 1.9; letter-spacing: 0.08em; }
 
 /* --- chrome --------------------------------------------------------------- */
 
@@ -407,6 +410,12 @@ a { color: inherit; text-decoration: none; }
   padding-block-start: 16svh;
   --scrim-x: 50%;
   --scrim-y: 30%;
+}
+
+/* the palette chapter shares the frame three ways: copy, face, swatch panel */
+.chapter--palette {
+  align-content: center;
+  padding-block-end: 26svh;
 }
 
 /* A soft scrim rides behind the copy so the text stays readable over whatever

@@ -1,9 +1,17 @@
-// Dev-only: drives the site in a real browser, captures shots at every chapter,
-// and reports console errors + WebGL state. Not part of the site.
+// Drives the site in a real browser, captures a shot of every chapter, and
+// reports console errors plus the WebGL state it actually got.
+//
+//   npm i -D playwright && node scripts/screenshots.mjs [outDir] [quality]
+//
+// `quality` is passed straight through as ?quality=  so a machine that does not
+// report its real hardware (CI, a software rasteriser) can still be pinned to a
+// tier. Requires the dev server to be running.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 
-const OUT = process.argv[2] || '/tmp/claude-0/-home-user-maayanai30/46f51010-fa52-579d-9836-defab32db327/scratchpad/shots';
+const OUT = process.argv[2] || 'screenshots';
+const QUALITY = process.argv[3] || '';
+const URL = 'http://localhost:5173/' + (QUALITY ? `?quality=${QUALITY}` : '');
 mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch({
@@ -15,11 +23,13 @@ const browser = await chromium.launch({
 });
 
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+page.setDefaultTimeout(180000);
+page.setDefaultNavigationTimeout(180000);
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`${m.type()}: ${m.text()}`); });
 page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
 
-await page.goto('http://localhost:5173/', { waitUntil: 'load' });
+await page.goto(URL, { waitUntil: 'domcontentloaded' });
 
 // wait for the preloader to offer entry
 await page.waitForSelector('.preloader.is-ready', { timeout: 120000 });
@@ -51,17 +61,31 @@ for (let i = 0; i < chapters; i++) {
     window.scrollTo({ top: (idx / total) * max, behavior: 'instant' });
   }, i);
   // SwiftShader runs at a couple of fps, so the damped camera would still be
-  // catching up. Snap it to the target for a deterministic shot.
-  await page.waitForTimeout(700);
-  await page.evaluate(() => { window.__scene.director.smoothT = window.__scene.director.targetT; });
-  await page.waitForTimeout(1400);
+  // catching up. Snap repeatedly until the director has actually settled.
+  for (let attempt = 0; attempt < 4; attempt++) {
+    await page.waitForTimeout(700);
+    const settled = await page.evaluate(() => {
+      const d = window.__scene.director;
+      d.smoothT = d.targetT;
+      return Math.abs(d.smoothT - d.targetT) < 0.01;
+    });
+    if (settled && attempt >= 1) break;
+  }
+  await page.waitForTimeout(1600);
   const id = await page.evaluate((idx) => document.querySelectorAll('[data-chapter]')[idx].id, i);
+  if (id === 'palette') {
+    await page.click('.palette__row:nth-child(1) .palette__swatch:nth-child(4)').catch(() => {});
+    await page.click('.palette__row:nth-child(2) .palette__swatch:nth-child(3)').catch(() => {});
+    await page.waitForTimeout(2600);
+  }
   await page.screenshot({ path: `${OUT}/${String(i + 1).padStart(2, '0')}-${id}.png` });
 }
 
 // mobile pass
 const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
-await mobile.goto('http://localhost:5173/', { waitUntil: 'load' });
+mobile.setDefaultTimeout(180000);
+mobile.setDefaultNavigationTimeout(180000);
+await mobile.goto(URL, { waitUntil: 'domcontentloaded' });
 await mobile.waitForSelector('.preloader.is-ready', { timeout: 120000 });
 await mobile.click('[data-preloader-enter]');
 await mobile.waitForTimeout(2500);

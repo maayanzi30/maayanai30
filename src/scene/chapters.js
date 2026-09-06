@@ -42,7 +42,7 @@ export const SHADES = {
 };
 
 const BASE_GRADE = {
-  exposure: 1.0,
+  exposure: 1.12,
   contrast: 1.06,
   saturation: 1.04,
   lift: [0.008, 0.005, 0.010],
@@ -62,11 +62,11 @@ const BASE_GRADE = {
 };
 
 const BASE_BACKDROP = {
-  top: [0.052, 0.042, 0.050],
-  bottom: [0.016, 0.013, 0.017],
-  glowColor: [0.85, 0.62, 0.42],
+  top: [0.043, 0.036, 0.046],
+  bottom: [0.011, 0.009, 0.014],
+  glowColor: [0.78, 0.55, 0.36],
   glowPos: [0.5, 0.62],
-  glowStrength: 0.16,
+  glowStrength: 0.07,
 };
 
 const BASE_GROUPS = { skin: 1, veil: 1, flower: 1, mote: 1, lips: 1, eyes: 1 };
@@ -99,7 +99,7 @@ export const CHAPTERS = [
       exposure: 0.82, vignette: 0.78, grain: 0.062, bloomStrength: 0.85,
       aberration: 0.45, letterbox: 0.055, saturation: 0.86,
     },
-    backdrop: { glowStrength: 0.10, glowPos: [0.5, 0.55] },
+    backdrop: { glowStrength: 0.07, glowPos: [0.5, 0.55] },
   }),
 
   chapter({
@@ -109,12 +109,12 @@ export const CHAPTERS = [
     title: 'הבד',
     lead: 'לפני הצבע — העור.',
     body: 'שכבה על שכבה, דקה מהקודמת. עבודה שנועדה להיעלם: אף אחד לא אמור לראות אותה, כולם אמורים להרגיש אותה. זה הבסיס שמחזיק שתים־עשרה שעות, שלוש שמלות ומאתיים חיבוקים.',
-    camera: { pos: [2.08, 1.99, 3.83], target: [0.0, 1.45, 0.20], fov: 30, shift: [0.62, -0.10] },
+    camera: { pos: [2.24, 2.05, 4.14], target: [0.0, 1.45, 0.20], fov: 30, shift: [0.78, -0.10] },
     focusOffset: -0.05,
     dof: { strength: 3.4, max: 11 },
     groups: { veil: 0.75, mote: 0.7 },
     grade: { exposure: 1.02, letterbox: 0.0, bloomStrength: 0.5, aberration: 0.16 },
-    backdrop: { glowPos: [0.62, 0.58], glowStrength: 0.22 },
+    backdrop: { glowPos: [0.62, 0.58], glowStrength: 0.15 },
   }),
 
   chapter({
@@ -124,15 +124,15 @@ export const CHAPTERS = [
     title: 'העין',
     lead: 'כאן מסתכלים עלייך.',
     body: 'בתמונות של החתונה, בסרטון של הריקוד, בעוד עשרים שנה על המדף. העין היא המשפט הראשון — ואני כותבת אותו בשכבות דקות, עם יד קרובה מאוד.',
-    camera: { pos: [0.96, 1.97, 1.89], target: [0.30, 1.62, 0.50], fov: 26, shift: [-0.16, 0.02] },
+    camera: { pos: [1.34, 2.14, 2.81], target: [0.30, 1.62, 0.50], fov: 26, shift: [-0.34, 0.06] },
     focusOffset: -0.02,
-    dof: { strength: 7.5, max: 22 },
+    dof: { strength: 4.2, max: 13 },
     groups: { veil: 0.5, mote: 0.5, flower: 0.8 },
     grade: {
       exposure: 1.08, contrast: 1.12, bloomStrength: 0.42, aberration: 0.14,
       grain: 0.05, vignette: 0.72,
     },
-    backdrop: { glowPos: [0.58, 0.66], glowStrength: 0.26 },
+    backdrop: { glowPos: [0.58, 0.66], glowStrength: 0.17 },
   }),
 
   chapter({
@@ -142,14 +142,14 @@ export const CHAPTERS = [
     title: 'השפה',
     lead: 'הצבע היחיד שמדבר.',
     body: 'קו אחד מחליט אם הפנים רכות או חדות, קלאסיות או מודרניות. אנחנו נבחר אותו יחד — ואז נוודא שהוא שורד את הכוס הראשונה, את הנשיקה ואת החופה.',
-    camera: { pos: [-0.50, 1.44, 2.09], target: [0.0, 1.21, 0.52], fov: 26, shift: [0.20, -0.02] },
-    dof: { strength: 8.5, max: 24 },
+    camera: { pos: [-0.63, 1.50, 2.83], target: [0.0, 1.24, 0.52], fov: 26, shift: [0.42, -0.04] },
+    dof: { strength: 4.6, max: 14 },
     groups: { veil: 0.42, mote: 0.45, flower: 0.6 },
     grade: {
       exposure: 1.06, contrast: 1.14, saturation: 1.12, bloomStrength: 0.38,
       aberration: 0.14, vignette: 0.74, bleed: 0.05,
     },
-    backdrop: { glowPos: [0.42, 0.52], glowStrength: 0.24 },
+    backdrop: { glowPos: [0.42, 0.52], glowStrength: 0.16 },
   }),
 
   chapter({
@@ -169,7 +169,7 @@ export const CHAPTERS = [
       letterbox: 0.045, saturation: 0.96, bloomThreshold: 0.6,
       sequenceOpacity: 0.42, sequenceScale: 1.08,
     },
-    backdrop: { glowPos: [0.3, 0.7], glowStrength: 0.3, top: [0.062, 0.05, 0.058] },
+    backdrop: { glowPos: [0.3, 0.7], glowStrength: 0.20, top: [0.062, 0.05, 0.058] },
   }),
 
   chapter({
@@ -180,14 +180,14 @@ export const CHAPTERS = [
     lead: 'עכשיו תורך.',
     body: 'בחרי גוון לשפתיים ולעפעפיים — ותראי אותו נכנס לפנים בזמן אמת. ככה בדיוק נראית פגישת הניסיון, רק בלי הנסיעה.',
     interactive: 'palette',
-    camera: { pos: [0.52, 1.62, 5.35], target: [0.0, 1.34, 0.15], fov: 30, shift: [0.0, -0.14] },
+    camera: { pos: [0.52, 1.62, 5.05], target: [0.0, 1.40, 0.15], fov: 30, shift: [-0.92, 0.22] },
     dof: { strength: 2.6, max: 10 },
     groups: { veil: 0.7, mote: 0.55 },
     grade: {
       exposure: 1.05, contrast: 1.08, saturation: 1.10, bloomStrength: 0.5,
       aberration: 0.14, vignette: 0.6,
     },
-    backdrop: { glowPos: [0.5, 0.6], glowStrength: 0.28 },
+    backdrop: { glowPos: [0.5, 0.6], glowStrength: 0.18 },
   }),
 
   chapter({
@@ -198,14 +198,14 @@ export const CHAPTERS = [
     lead: 'הזיזי את העכבר. תראי מה קורה.',
     body: 'אולם, גינה, שקיעה, ניאון של מסיבה. אותו איפור מקבל ארבע פנים. אני מאפרת לאור שבו את הולכת לעמוד — לא לאור שבו אני עובדת.',
     interactive: 'light',
-    camera: { pos: [3.70, 1.95, 1.93], target: [0.0, 1.45, 0.0], fov: 34, shift: [-0.46, 0.0] },
+    camera: { pos: [3.70, 1.95, 1.93], target: [0.0, 1.45, 0.0], fov: 34, shift: [-0.62, 0.0] },
     dof: { strength: 2.2, max: 9 },
     groups: { veil: 0.9, mote: 0.9 },
     grade: {
       exposure: 0.96, contrast: 1.12, bloomStrength: 0.68, aberration: 0.20,
       vignette: 0.7, bloomThreshold: 0.65,
     },
-    backdrop: { glowPos: [0.72, 0.55], glowStrength: 0.3 },
+    backdrop: { glowPos: [0.72, 0.55], glowStrength: 0.20 },
   }),
 
   chapter({
@@ -224,7 +224,7 @@ export const CHAPTERS = [
       grain: 0.05, vignette: 0.55, letterbox: 0.06, bleed: 0.09,
       sequenceOpacity: 0.55, sequenceScale: 1.0, saturation: 1.05,
     },
-    backdrop: { glowPos: [0.5, 0.68], glowStrength: 0.4, top: [0.075, 0.06, 0.062] },
+    backdrop: { glowPos: [0.5, 0.68], glowStrength: 0.26, top: [0.075, 0.06, 0.062] },
   }),
 
   chapter({
@@ -243,7 +243,7 @@ export const CHAPTERS = [
       exposure: 0.86, bloomStrength: 0.8, aberration: 0.30, grain: 0.06,
       vignette: 0.8, saturation: 0.9, letterbox: 0.03,
     },
-    backdrop: { glowStrength: 0.14, glowPos: [0.5, 0.5] },
+    backdrop: { glowStrength: 0.09, glowPos: [0.5, 0.5] },
   }),
 ];
 

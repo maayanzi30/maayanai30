@@ -14,6 +14,9 @@ export class Interface {
     this.sections = Array.from(document.querySelectorAll('[data-chapter]'));
     this.items = [];
     this.activeIndex = -1;
+    // Style writes force a recalc, so only touch a section when its weight has
+    // actually moved. Most frames only two of the nine change at all.
+    this.lastWeights = new Float32Array(this.sections.length).fill(-1);
 
     this._buildRail();
   }
@@ -49,13 +52,20 @@ export class Interface {
 
     for (let i = 0; i < this.sections.length; i++) {
       const weight = weights[i] ?? 0;
+      if (Math.abs(weight - this.lastWeights[i]) < 0.002) continue;
+
+      const wasVisible = this.lastWeights[i] > 0.25;
+      this.lastWeights[i] = weight;
       const section = this.sections[i];
+
       // Copy rises as its chapter arrives and sinks as the camera leaves it.
       section.style.opacity = weight.toFixed(3);
       section.style.transform = `translate3d(0, ${((1 - weight) * 26).toFixed(2)}px, 0)`;
       section.style.pointerEvents = weight > 0.55 ? 'auto' : 'none';
       section.classList.toggle('is-active', weight > 0.5);
-      section.setAttribute('aria-hidden', weight > 0.25 ? 'false' : 'true');
+      if (wasVisible !== weight > 0.25) {
+        section.setAttribute('aria-hidden', weight > 0.25 ? 'false' : 'true');
+      }
     }
 
     const index = Math.round(smoothT);

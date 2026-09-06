@@ -151,7 +151,11 @@ void main() {
   vec3 viewDir = normalize(-cam.xyz);
   vec3 nView = mat3(u_view) * normal;
 
-  float key  = abs(dot(normal, normalize(u_lightDir)));
+  // Wrap lighting rather than a two-sided abs(): the terminator is what gives the
+  // form its shape. Captures whose normals have arbitrary sign degrade to a flat
+  // mid-tone, which is what you want there anyway - their colour is already lit.
+  float ndl  = dot(normal, normalize(u_lightDir));
+  float key  = pow(clamp(ndl * 0.5 + 0.5, 0.0, 1.0), 1.5);
   float rim  = pow(1.0 - min(abs(dot(nView, viewDir)), 1.0), 3.0);
   float fill = 0.5 + 0.5 * normal.y;
 
@@ -160,9 +164,12 @@ void main() {
   vec3 tinted = tint.rgb * (0.30 + 0.95 * luma(base));
   base = mix(base, tinted, tint.a);
 
-  vec3 lit = base * (0.34 + 0.62 * key + 0.18 * fill);
-  lit += vec3(1.0, 0.92, 0.82) * rim * (0.22 + 0.55 * float(group == 1));
-  lit += vec3(1.0, 0.86, 0.62) * pow(key, 26.0) * 0.5;   // specular glint
+  vec3 warm = vec3(1.0, 0.93, 0.84);
+  vec3 cool = vec3(0.62, 0.60, 0.66);
+  vec3 lit = base * (0.28 + 0.84 * key) * warm;
+  lit += base * cool * (0.22 * (1.0 - key) + 0.14 * fill);          // bounce
+  lit += vec3(1.0, 0.92, 0.82) * rim * (0.20 + 0.60 * float(group == 1));
+  lit += vec3(1.0, 0.88, 0.66) * pow(max(ndl, 0.0), 22.0) * 0.55;   // specular glint
 
   v_color = vec4(lit * u_exposure, clamp(opacity * groupAlpha, 0.0, 1.0));
   v_corner = a_corner;
