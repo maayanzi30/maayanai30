@@ -10,16 +10,9 @@ export const SITE = {
   // the generated object with no other changes. Leave null to use the generator.
   splatUrl: null,
 
-  // TODO: replace these placeholders with the real details before going live.
-  contact: {
-    phone: '050-000-0000',
-    phoneHref: 'tel:+972500000000',
-    email: 'hello@example.com',
-    instagram: '@example',
-    instagramHref: 'https://instagram.com/',
-    whatsappHref: 'https://wa.me/972500000000',
-    area: 'מרכז הארץ · ניידת לכל הארץ',
-  },
+  // Contact details live in index.html, in the block marked CONTACT DETAILS.
+  // They are kept in the markup rather than here so they survive with no JS and
+  // are readable by a crawler - and so there is exactly one place to edit them.
 };
 
 // Makeup shades. The lip and lid splats are repainted with these in real time --
