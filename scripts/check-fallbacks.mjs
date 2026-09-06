@@ -1,6 +1,14 @@
-// Dev-only: verifies the reduced-motion path and the no-WebGL document fallback.
+// Verifies the two degraded paths in a real browser:
+//   1. prefers-reduced-motion: no handheld float, no transition effects
+//   2. no WebGL2: the page becomes an ordinary scrolling document
+//
+//   npm i -D playwright && node scripts/check-fallbacks.mjs
+//
+// Requires the dev server to be running.
 import { chromium } from 'playwright';
-const OUT = '/tmp/claude-0/-home-user-maayanai30/46f51010-fa52-579d-9836-defab32db327/scratchpad/debug';
+const OUT = process.argv[2] || 'screenshots';
+import { mkdirSync } from 'node:fs';
+mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch({
   executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',

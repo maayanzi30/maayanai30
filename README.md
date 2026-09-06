@@ -5,9 +5,13 @@
 את המצלמה. כל פרק הוא שוט: מיקום מצלמה, עומק שדה, גריידינג צבע, ומעבר קולנועי.
 
 ```
-npm run dev      # שרת סטטי מקומי  → http://localhost:5173
-npm run sequence # מייצר מחדש את רצף התמונות
+npm run dev              # שרת סטטי מקומי  → http://localhost:5173
+npm run sequence         # מייצר מחדש את רצף התמונות
+npm run shots            # מצלם את כל הפרקים בדפדפן אמיתי*
+npm run check:fallbacks  # בודק reduced-motion ואת המצב בלי WebGL2*
 ```
+
+\* שתי הפקודות האחרונות דורשות `npm i -D playwright` ושרת פיתוח שרץ.
 
 אין שלב build ואין תלויות רנטיים. אפשר להעלות את התיקייה כמו שהיא לכל אחסון סטטי
 (Netlify / Vercel / Cloudflare Pages / GitHub Pages / S3). דרוש שרת HTTP — לא
@@ -150,5 +154,6 @@ scripts/
   serve.mjs                 שרת פיתוח
   make-sequence.mjs         מחולל הפריימים
   screenshots.mjs           צילום כל הפרקים בדפדפן אמיתי (דורש playwright)
+  check-fallbacks.mjs       בדיקת reduced-motion והמצב בלי WebGL2
 assets/sequence/            48 פריימים + manifest
 ```
