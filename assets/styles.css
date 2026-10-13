@@ -180,22 +180,25 @@ a { color: inherit; }
 @media (max-width: 600px) { .services-grid { grid-template-columns: 1fr; } .service { min-height: 0; } .service-num { padding-bottom: var(--s-8); } }
 
 /* 04 Why: the only stacked-card sequence */
-.why { background: linear-gradient(180deg, transparent, rgba(18, 28, 43, .5) 30%, rgba(18, 28, 43, .5) 70%, transparent); }
+.why { background: radial-gradient(60% 50% at 75% 50%, rgba(166, 191, 255, .07), transparent 70%), linear-gradient(180deg, var(--canvas), #0D1420 15%, #0D1420 85%, var(--canvas)); }
 .why-layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 5vw, 96px); align-items: start; }
 .why-head { position: sticky; top: calc(var(--header-h) + 48px); }
 .stack { display: grid; gap: var(--s-24); }
 .stack-card {
   position: sticky; top: calc(var(--header-h) + 48px + var(--i) * 20px); z-index: calc(1 + var(--i));
   min-height: 300px; padding: clamp(28px, 3vw, 48px);
-  background: linear-gradient(160deg, var(--surface-2), var(--surface) 60%);
-  border: 1px solid rgba(166, 191, 255, .2); border-radius: 20px;
-  box-shadow: 0 -12px 40px rgba(0, 0, 0, .35);
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(166, 191, 255, calc(.10 + var(--i) * .03)), transparent 60%),
+    radial-gradient(80% 80% at 0% 100%, rgba(182, 155, 242, .08), transparent 60%),
+    linear-gradient(160deg, #1D2B45, #16223A);
+  border: 1px solid rgba(166, 191, 255, .28); border-radius: 20px;
+  box-shadow: 0 -8px 24px rgba(5, 8, 14, .25), inset 0 1px 0 rgba(244, 247, 251, .08);
   transform-origin: 50% 0;
   display: flex; flex-direction: column; gap: var(--s-12);
 }
 .stack-num { font-family: var(--serif); font-style: italic; font-size: 44px; line-height: 1; color: var(--accent-2); margin-bottom: auto; padding-bottom: var(--s-32); }
 .stack-card h3 { font-size: clamp(24px, 2.4vw, 32px); }
-.stack-card p { color: var(--muted); max-width: 52ch; }
+.stack-card p { color: #C3CCDA; max-width: 52ch; }
 .stack-card:last-child { margin-bottom: 0; }
 @media (max-width: 860px) {
   .why-layout { grid-template-columns: 1fr; }

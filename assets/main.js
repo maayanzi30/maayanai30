@@ -75,14 +75,14 @@ function initScroll() {
     });
   });
 
-  // Why-us stack: earlier cards ease back slightly as the next one covers them (desktop only)
+  // Why-us stack: earlier cards recede slightly as the next one covers them (desktop only)
   mm.add('(min-width: 861px)', () => {
     const cards = gsap.utils.toArray('.stack-card');
     cards.forEach((card, i) => {
       const next = cards[i + 1];
       if (!next) return;
       gsap.to(card, {
-        scale: 0.96, filter: 'brightness(0.55)', ease: 'none',
+        scale: 0.95, ease: 'none',
         scrollTrigger: { trigger: next, start: 'top 75%', end: 'top 30%', scrub: true },
       });
     });
